@@ -4,6 +4,7 @@ import launch_ros
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 
+import launch
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -64,6 +65,10 @@ def generate_launch_description():
     declare_gui = DeclareLaunchArgument(
         "gui", default_value="true", description="Use gui"
     )
+
+    declare_headless = DeclareLaunchArgument(
+        "headless", default_value="false", description="Disable gazebo world launch"
+    )
     declare_world_init_x = DeclareLaunchArgument("world_init_x", default_value="0.0")
     declare_world_init_y = DeclareLaunchArgument("world_init_y", default_value="0.0")
     declare_world_init_z = DeclareLaunchArgument("world_init_z", default_value="20")
@@ -111,6 +116,7 @@ def generate_launch_description():
                 "gazebo.launch.py",
             )
         ),
+        condition=launch.conditions.UnlessCondition(LaunchConfiguration("headless")),
         launch_arguments={
             "use_sim_time": LaunchConfiguration("use_sim_time"),
             "robot_name": LaunchConfiguration("robot_name"),
@@ -127,7 +133,8 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            gz_plugin_path,
+            declare_headless,
+	    gz_plugin_path,
             declare_use_sim_time,
             declare_rviz,
             declare_robot_name,
