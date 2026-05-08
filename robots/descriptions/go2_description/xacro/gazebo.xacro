@@ -1,21 +1,25 @@
 <?xml version="1.0"?>
-<robot>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<xacro:macro name="gazebo_setup">
+<!-- Pose publisher plugin for ground truth odometry -->
+<gazebo>
+    <plugin filename="ignition-gazebo-pose-publisher-system" name="ignition::gazebo::systems::PosePublisher">
+        <publish_link_pose>true</publish_link_pose>
+        <publish_nested_model_pose>true</publish_nested_model_pose>
+        <use_pose_vector_msg>true</use_pose_vector_msg>
+        <update_frequency>10.0</update_frequency>
+    </plugin>
+</gazebo>
 
-    <!-- Pose publisher plugin for ground truth odometry -->
-    <gazebo>
-        <plugin filename="ignition-gazebo-pose-publisher-system" name="ignition::gazebo::systems::PosePublisher">
-            <publish_link_pose>true</publish_link_pose>
-            <publish_nested_model_pose>true</publish_nested_model_pose>
-            <use_pose_vector_msg>true</use_pose_vector_msg>
-            <update_frequency>10.0</update_frequency>
-        </plugin>
-    </gazebo>
-
-    <!-- Ignition ros2_control plugin -->
-    <gazebo>
-        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-            <parameters>$(find go2_description)/config/ros_control/ros_control.yaml</parameters>
-        </plugin>
+<!-- Ignition ros2_control plugin -->
+<xacro:arg name="ros_control_file" default="$(find go2_description)/config/ros_control/ros_control.yaml"/>
+<gazebo>
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <ros>
+            <namespace>$(arg robot_name)</namespace>
+        </ros>
+        <parameters>$(find go2_description)/config/ros_control/ros_control.yaml</parameters>
+    </plugin>
     </gazebo>
 
     <!-- IMU sensor -->
@@ -191,5 +195,5 @@
         <kp>10000.0</kp>
         <kd>1.0</kd>
     </gazebo>
-
+</xacro:macro>
 </robot>

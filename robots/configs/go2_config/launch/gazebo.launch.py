@@ -36,7 +36,7 @@ def generate_launch_description():
     links_config = os.path.join(config_pkg_share, "config/links/links.yaml")
     default_model_path = os.path.join(descr_pkg_share, "xacro/robot.xacro")
     # Use SDF world file for Ignition Fortress
-    default_world_path = os.path.join(config_pkg_share, "worlds/default.sdf")
+    default_world_path = os.path.join(config_pkg_share, "worlds/new.sdf")
 
     declare_use_sim_time = DeclareLaunchArgument(
         "use_sim_time",
