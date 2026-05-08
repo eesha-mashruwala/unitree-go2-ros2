@@ -17,6 +17,7 @@ def generate_launch_description():
     go2_config_pkg = get_package_share_directory("go2_config")
     
     world_file = os.path.join(go2_config_pkg, "worlds", "new.sdf") 
+    # Using the standard robot.xacro where you added the custom LiDAR XML
     base_xacro_path = os.path.join(go2_desc_pkg, "xacro", "robot.xacro")
     
     # We will use this single, static file for ALL robots
@@ -51,7 +52,7 @@ def generate_launch_description():
     )
     ld.add_action(clock_bridge)
 
-# --- 4. Multi-Robot Spawning ---
+    # --- 4. Multi-Robot Spawning ---
     ROWS = 2 
     COLS = 1 
     SPACING = 1.5  # Distance in meters between each robot
@@ -109,7 +110,7 @@ def generate_launch_description():
                 arguments=[
                     "-name", name,
                     "-file", compiled_urdf_path, 
-                    "-x", str(x_pos), "-y", str(y_pos), "-z", "0.6", "-Y", "0.0", # <-- Updated X and Y here
+                    "-x", str(x_pos), "-y", str(y_pos), "-z", "0.6", "-Y", "0.0", 
                 ],
                 output="screen",
             )
@@ -129,10 +130,40 @@ def generate_launch_description():
                 output="screen",
             )
 
+            # D. Bridge Gazebo PointCloud to ROS 2
+            # Using 'slam_world' based on your ign topic -l output earlier
+            gz_lidar_topic = f'/world/slam_world/model/{name}/link/lidar_link/sensor/lidar/scan/points'
+            ros_lidar_topic = f'{namespace}/pointcloud'
+
+            lidar_bridge = Node(
+                package='ros_gz_bridge',
+                executable='parameter_bridge',
+                arguments=[
+                    f'{gz_lidar_topic}@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked'
+                ],
+                remappings=[
+                    (gz_lidar_topic, ros_lidar_topic)
+                ],
+                output='screen'
+            )
+
+            # E. Link Robot Odom to Global Map (Fixes RViz Map Error)
+            static_tf_map_to_odom = Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                arguments=[
+                    "--x", str(x_pos), "--y", str(y_pos), "--z", "0.0",
+                    "--yaw", "0.0", "--pitch", "0.0", "--roll", "0.0",
+                    "--frame-id", "map", "--child-frame-id", f"{name}/odom"
+                ],
+                output="screen",
+            )
+
             # --- Execution Sequence ---
             delay_first_spawn = TimerAction(
                 period=8.0,
-                actions=[champ_bringup, spawn_go2]
+                # Added the new bridge and tf2 nodes here
+                actions=[champ_bringup, spawn_go2, lidar_bridge, static_tf_map_to_odom]
             )
             ld.add_action(delay_first_spawn)
 
@@ -148,4 +179,5 @@ def generate_launch_description():
                 )
             )
             ld.add_action(delay_controllers)
+
     return ld
