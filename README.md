@@ -196,6 +196,9 @@ In another terminal, launch rviz with sim_time = true
 ```bash
 ros2 run rviz2 rviz2 --ros-args --remap use_sim_time:=true
 ```
+Once in rviz2:
+1. Navigate to the bottom right where it says 'Add'. Add a robot's PointCloud.
+2. Change the Fixed Frame to: go2_x_y/velodyne. Example: `go2_0_0/velodyne`.
 
 In the last terminal, publish commands to `/cmd_vel`.
 
