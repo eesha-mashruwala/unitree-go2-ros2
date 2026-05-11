@@ -131,8 +131,7 @@ def generate_launch_description():
             )
 
             # D. Bridge Gazebo PointCloud to ROS 2
-            # Using 'slam_world' based on your ign topic -l output earlier
-            gz_lidar_topic = f'/world/slam_world/model/{name}/link/lidar_link/sensor/lidar/scan/points'
+            gz_lidar_topic = f'/world/slam_world/model/{name}/link/velodyne/sensor/velodyne-VLP16/scan/points'
             ros_lidar_topic = f'{namespace}/pointcloud'
 
             lidar_bridge = Node(

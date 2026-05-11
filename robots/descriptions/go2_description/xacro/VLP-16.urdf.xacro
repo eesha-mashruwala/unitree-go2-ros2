@@ -57,13 +57,13 @@
 
     <!-- Gazebo Fortress GPU Lidar sensor -->
     <gazebo reference="${name}">
-      <sensor type="lidar" name="${name}-VLP16">
+      <sensor type="gpu_lidar" name="${name}-VLP16">
         <pose>0 0 0 0 0 0</pose>
         <visualize>false</visualize>
         <update_rate>${hz}</update_rate>
         <always_on>true</always_on>
         <topic>${gz_topic}</topic>
-        <gz_frame_id>${name}</gz_frame_id>
+        <ignition_frame_id>${name}</ignition_frame_id>
         <lidar>
           <scan>
             <horizontal>
