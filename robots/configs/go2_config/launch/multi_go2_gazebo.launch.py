@@ -47,7 +47,8 @@ def generate_launch_description():
     clock_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock]'],
+        # Humble ros_gz_bridge: topic@ros_type@gz_type (see ros_gz_bridge README)
+        arguments=['/clock@rosgraph_msgs/msg/Clock@ignition.msgs.Clock'],
         parameters=[{'use_sim_time': True}],
         output='screen',
     )
@@ -109,9 +110,20 @@ def generate_launch_description():
                 package="ros_gz_sim",
                 executable="create",
                 arguments=[
-                    "-name", name,
-                    "-file", compiled_urdf_path, 
-                    "-x", str(x_pos), "-y", str(y_pos), "-z", "0.6", "-Y", "0.0", 
+                    "-world",
+                    "slam_world",
+                    "-name",
+                    name,
+                    "-file",
+                    compiled_urdf_path,
+                    "-x",
+                    str(x_pos),
+                    "-y",
+                    str(y_pos),
+                    "-z",
+                    "0.6",
+                    "-Y",
+                    "0.0",
                 ],
                 output="screen",
             )
@@ -139,7 +151,7 @@ def generate_launch_description():
                 package='ros_gz_bridge',
                 executable='parameter_bridge',
                 arguments=[
-                    f'{gz_lidar_topic}@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked]',
+                    f'{gz_lidar_topic}@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked',
                 ],
                 parameters=[{'use_sim_time': True}],
                 remappings=[
