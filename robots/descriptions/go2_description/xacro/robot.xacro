@@ -148,7 +148,7 @@
 
   <xacro:include filename="$(find go2_description)/xacro/VLP-16.urdf.xacro"/>
 
-  <xacro:VLP-16 parent="base_link" name="velodyne" topic="scan/points" hz="10" samples="360" gpu="false">
+  <xacro:VLP-16 parent="base_link" name="velodyne" gz_topic="/$(arg robot_name)/pointcloud_gz" hz="10" samples="360" gpu="false">
     <origin xyz="0.1 0 0.10" rpy="0 0 0" />
   </xacro:VLP-16>
 
