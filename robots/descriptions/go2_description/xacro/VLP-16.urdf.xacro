@@ -63,7 +63,6 @@
         <update_rate>${hz}</update_rate>
         <always_on>true</always_on>
         <topic>${gz_topic}</topic>
-        <ignition_frame_id>${name}</ignition_frame_id>
         <lidar>
           <scan>
             <horizontal>
@@ -90,6 +89,10 @@
             <stddev>${noise}</stddev>
           </noise>
         </lidar>
+        <!-- Same pattern as laser.xacro: without this plugin Fortress never publishes LiDAR topics -->
+        <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+          <ignition_frame_id>${name}</ignition_frame_id>
+        </plugin>
       </sensor>
     </gazebo>
 

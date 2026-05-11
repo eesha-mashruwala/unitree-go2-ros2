@@ -47,8 +47,9 @@ def generate_launch_description():
     clock_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'],
-        output='screen'
+        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock]'],
+        parameters=[{'use_sim_time': True}],
+        output='screen',
     )
     ld.add_action(clock_bridge)
 
@@ -138,22 +139,24 @@ def generate_launch_description():
                 package='ros_gz_bridge',
                 executable='parameter_bridge',
                 arguments=[
-                    f'{gz_lidar_topic}@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked'
+                    f'{gz_lidar_topic}@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked]',
                 ],
+                parameters=[{'use_sim_time': True}],
                 remappings=[
-                    (gz_lidar_topic, ros_lidar_topic)
+                    (gz_lidar_topic, ros_lidar_topic),
                 ],
-                output='screen'
+                output='screen',
             )
 
             # E. Link Robot Odom to Global Map (Fixes RViz Map Error)
             static_tf_map_to_odom = Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
+                parameters=[{"use_sim_time": True}],
                 arguments=[
                     "--x", str(x_pos), "--y", str(y_pos), "--z", "0.0",
                     "--yaw", "0.0", "--pitch", "0.0", "--roll", "0.0",
-                    "--frame-id", "map", "--child-frame-id", f"{name}/odom"
+                    "--frame-id", "map", "--child-frame-id", f"{name}/odom",
                 ],
                 output="screen",
             )
