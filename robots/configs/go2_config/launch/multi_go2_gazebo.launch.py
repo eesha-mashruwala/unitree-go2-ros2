@@ -4,7 +4,16 @@ import subprocess
 
 from ament_index_python.packages import get_package_share_directory, get_package_prefix
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler, IncludeLaunchDescription, GroupAction, SetEnvironmentVariable, TimerAction
+from launch.actions import (
+    DeclareLaunchArgument,
+    GroupAction,
+    IncludeLaunchDescription,
+    RegisterEventHandler,
+    SetEnvironmentVariable,
+    TimerAction,
+)
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, PushRosNamespace
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.event_handlers import OnProcessExit
@@ -15,6 +24,7 @@ def generate_launch_description():
     # --- 1. Define Paths ---
     go2_desc_pkg = get_package_share_directory("go2_description") 
     go2_config_pkg = get_package_share_directory("go2_config")
+    publish_static_map_odom_tf = LaunchConfiguration("publish_static_map_odom_tf")
     
     world_file = os.path.join(go2_config_pkg, "worlds", "new.sdf") 
     # Using the standard robot.xacro where you added the custom LiDAR XML
@@ -33,6 +43,11 @@ def generate_launch_description():
     ld.add_action(SetEnvironmentVariable(name='GZ_SIM_SYSTEM_PLUGIN_PATH', value='/opt/ros/humble/lib'))
     ld.add_action(SetEnvironmentVariable(name='IGN_GAZEBO_RESOURCE_PATH', value=workspace_share_dir))
     ld.add_action(SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=workspace_share_dir))
+    ld.add_action(DeclareLaunchArgument(
+        "publish_static_map_odom_tf",
+        default_value="true",
+        description="Publish the static map-to-odom transform when Nav2 is not managing localization.",
+    ))
 
     # --- 3. Launch Gazebo Fortress ---
     gz_sim_cmd = IncludeLaunchDescription(
@@ -147,6 +162,19 @@ def generate_launch_description():
                 output='screen'
             )
 
+            gz_scan_topic = f'/world/slam_world/model/{name}/link/lidar_link/sensor/lidar/scan'
+            scan_bridge = Node(
+                package='ros_gz_bridge',
+                executable='parameter_bridge',
+                arguments=[
+                    f'{gz_scan_topic}@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan'
+                ],
+                remappings=[
+                    (gz_scan_topic, f'{namespace}/scan')
+                ],
+                output='screen'
+            )
+
             # E. Link Robot Odom to Global Map (Fixes RViz Map Error)
             static_tf_map_to_odom = Node(
                 package="tf2_ros",
@@ -157,13 +185,14 @@ def generate_launch_description():
                     "--frame-id", "map", "--child-frame-id", f"{name}/odom"
                 ],
                 output="screen",
+                condition=IfCondition(publish_static_map_odom_tf),
             )
 
             # --- Execution Sequence ---
             delay_first_spawn = TimerAction(
                 period=8.0,
                 # Added the new bridge and tf2 nodes here
-                actions=[champ_bringup, spawn_go2, lidar_bridge, static_tf_map_to_odom]
+                actions=[champ_bringup, spawn_go2, lidar_bridge, scan_bridge, static_tf_map_to_odom]
             )
             ld.add_action(delay_first_spawn)
 
