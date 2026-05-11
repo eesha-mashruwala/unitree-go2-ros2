@@ -3,6 +3,7 @@ import os
 import launch_ros
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 from launch import LaunchDescription
 from launch.actions import (DeclareLaunchArgument, ExecuteProcess,
@@ -94,7 +95,12 @@ def generate_launch_description():
     )
 
     # Robot description
-    robot_description = {"robot_description": Command(["xacro ", LaunchConfiguration("description_path")])}
+    robot_description = {
+        "robot_description": ParameterValue(
+            Command(["xacro ", LaunchConfiguration("description_path")]),
+            value_type=str,
+        )
+    }
 
     # Robot state publisher (skip if already launched by parent launch file)
     robot_state_publisher = Node(
