@@ -175,3 +175,35 @@ This project builds upon and incorporates work from the following projects:
 * [Velodyne Simulator](https://github.com/rahgirrafi/velodyne_simulator_ros2_gz.git) - Velodyne LiDAR simulation for Ignition Fortress
 
 We are grateful to the developers and contributors of these projects for their valuable work.
+
+
+# Our Edits!
+
+We have adapted the sim to include multiple robots in the sim. 
+Right now, we have n number of robots in the sim, with the in built 3D LiDAR. 
+
+### To change number of robots in sim
+Navigate to (`unitree-go2-ros2/robots/go2_config/launch/multi_go2_gazebo.launch.py`)
+Find ROWS and COLS. This changes the number of robots in the sim.
+
+### Running Everything 
+In 1 terminal, launch the sim
+```bash
+ros2 launch go2_config multi_go2_gazebo.launch.py
+```
+
+In another terminal, launch rviz with sim_time = true
+```bash
+ros2 run rviz2 rviz2 --ros-args --remap use_sim_time:=true
+```
+Once in rviz2:
+1. Navigate to the bottom right where it says 'Add'. Add a robot's PointCloud.
+2. Change the Fixed Frame to: go2_x_y/velodyne. Example: `go2_0_0/velodyne`.
+
+In the last terminal, publish commands to `/cmd_vel`.
+
+!! Note to change `/go2_0_0/cmd_vel/smooth` based on the robot number (format is go2_ROWS_COLS) and to change speed `"{linear: {x: x, y: y, z: z}` based on what speed you would like. Example command given below for go2_0_0 going forwards by by linear speed 0.25.
+
+```bash
+ros2 topic pub /go2_0_0/cmd_vel/smooth geometry_msgs/msg/Twist "{linear: {x: 0.25, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}"
+```
