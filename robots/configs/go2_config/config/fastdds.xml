@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  FastDDS profile for ROS 2 Humble multi-robot simulation.
+
+  Disables Shared Memory (SHM) transport and forces UDPv4 only.
+  This eliminates the "Failed init_port fastrtps_port####: open_and_lock_file failed"
+  errors that appear when multiple ROS 2 nodes are spawned simultaneously in the
+  same session (common in multi-robot Gazebo launches on VMs and Docker containers).
+
+  Usage (activate before launching):
+    export FASTRTPS_DEFAULT_PROFILES_FILE=<absolute_path_to_this_file>/fastdds.xml
+    export RMW_FASTRTPS_USE_QOS_FROM_XML=1
+
+  Or source hardware/src/unitree-go2-ros2/robots/configs/go2_config/setup_dds.bash
+-->
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+
+  <transport_descriptors>
+    <transport_descriptor>
+      <transport_id>UDPv4Transport</transport_id>
+      <type>UDPv4</type>
+    </transport_descriptor>
+  </transport_descriptors>
+
+  <participant profile_name="disable_shm" is_default_profile="true">
+    <rtps>
+      <!-- Disable the built-in SHM transport and use only UDPv4 -->
+      <useBuiltinTransports>false</useBuiltinTransports>
+      <userTransports>
+        <transport_id>UDPv4Transport</transport_id>
+      </userTransports>
+    </rtps>
+  </participant>
+
+</profiles>

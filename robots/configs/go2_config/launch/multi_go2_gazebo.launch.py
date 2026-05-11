@@ -27,12 +27,19 @@ def generate_launch_description():
     gait_config = os.path.join(go2_config_pkg, "config", "gait", "gait.yaml")
     links_config = os.path.join(go2_config_pkg, "config", "links", "links.yaml")
 
-    # --- 2. Inject Gazebo Environment Variables ---
+    # --- 2. Inject Gazebo and DDS Environment Variables ---
     workspace_share_dir = os.path.join(get_package_prefix('go2_description'), 'share')
+    fastdds_xml = os.path.join(go2_config_pkg, 'config', 'fastdds.xml')
 
     ld.add_action(SetEnvironmentVariable(name='GZ_SIM_SYSTEM_PLUGIN_PATH', value='/opt/ros/humble/lib'))
     ld.add_action(SetEnvironmentVariable(name='IGN_GAZEBO_RESOURCE_PATH', value=workspace_share_dir))
     ld.add_action(SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=workspace_share_dir))
+    # Disable FastDDS Shared Memory to prevent port-lock errors with multiple spawner nodes
+    ld.add_action(SetEnvironmentVariable(name='FASTRTPS_DEFAULT_PROFILES_FILE', value=fastdds_xml))
+    ld.add_action(SetEnvironmentVariable(name='RMW_FASTRTPS_USE_QOS_FROM_XML', value='1'))
+    # Force Mesa software rasteriser so the Gazebo GUI can open on a VM without a real GPU.
+    # Remove this line if running on bare-metal hardware with a dedicated GPU.
+    ld.add_action(SetEnvironmentVariable(name='LIBGL_ALWAYS_SOFTWARE', value='1'))
 
     # --- 3. Launch Gazebo Fortress ---
     gz_sim_cmd = IncludeLaunchDescription(
@@ -144,7 +151,7 @@ def generate_launch_description():
             )
 
             # D. Bridge Gazebo PointCloud to ROS 2
-            gz_lidar_topic = f'/world/slam_world/model/{name}/link/velodyne/sensor/velodyne-VLP16/scan/points'
+            gz_lidar_topic = f'/world/slam_world/model/{name}/link/velodyne/sensor/velodyne_vlp16/scan/points'
             ros_lidar_topic = f'{namespace}/pointcloud'
 
             lidar_bridge = Node(
